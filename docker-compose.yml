@@ -1,0 +1,27 @@
+services:
+  agent:
+    build:
+      context: ./agent
+    shm_size: "256M"
+    ipc: host
+    command: >
+      sh -c "python -u run_inference.py"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities:
+                - gpu
+                - utility
+                - compute
+                - video
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=${GPU_NUM:-all}
+      - AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+      - S3_BUCKET_NAME=$S3_BUCKET_NAME
+    volumes:
+      - ./agent:/agent
+      - ./data:/data
+    hostname: agent
