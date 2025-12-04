@@ -1,0 +1,71 @@
+# PostgreSQL 데이터용 PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sdv-pg-db-pvc
+  namespace: sdv
+  labels:
+    app: sdv-pg-db
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: rook-ceph-block # Rook-Ceph StorageClass
+---
+# PostgreSQL Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-sdv-db-deployment
+  namespace: sdv
+  labels:
+    app: sdv-pg-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sdv-pg-db
+  template:
+    metadata:
+      labels:
+        app: sdv-pg-db
+    spec:
+      containers:
+      - name: postgres-container
+        image: postgres:15
+        ports:
+        - containerPort: 5432
+        env:
+        # DB 접속 정보 (서버 앱과 일치해야 함)
+        - name: POSTGRES_DB
+          value: "sdv_ev" 
+        - name: POSTGRES_USER
+          value: "sdv"
+        - name: POSTGRES_PASSWORD
+          value: "password" 
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: sdv-pg-db-pvc
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sdv-pg-db-svc
+  namespace: sdv
+spec:
+  selector:
+    app: sdv-pg-db
+  ports:
+    - port: 5432
+      targetPort: 5432

@@ -1,0 +1,72 @@
+# FastAPI Server App Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-collector-deployment
+  labels:
+    app: data-collector
+spec:
+  replicas: 2 # 데이터 수집의 안정성을 위해 복제본 2개 사용
+  selector:
+    matchLabels:
+      app: data-collector
+  template:
+    metadata:
+      labels:
+        app: data-collector
+    spec:
+      containers:
+      - name: data-collector-container
+        # 💡 사용자가 빌드하여 푸시한 이미지 경로 사용
+        image: registry.suredatalab.kr/etri/sdv/data-collector:v1 
+        ports:
+        - containerPort: 8000 # Dockerfile에서 설정한 포트 (8000)
+        
+        env:
+        # 1. DB 연결 정보
+        - name: DB_HOST
+          value: "postgresql-service" # PostgreSQL Service 이름
+        - name: DB_DATABASE
+          value: "sdv_ev"
+        - name: DB_USER
+          value: "sdv"
+        - name: DB_PASSWORD
+          value: "password" # ⚠️ 실제 비밀번호
+        - name: DB_PORT
+          value: "5432"
+
+        # 2. S3 (RGW) 연결 정보
+        - name: S3_ENDPOINT_URL
+          value: "http://s3.suredatalab.kr" # 💡 S3 Endpoint URL
+        - name: S3_BUCKET_NAME
+          value: "sdv-ml-data" # ⚠️ 사용할 버킷 이름으로 변경
+        
+        # S3 Access Key는 Secret에서 가져옴
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sdv-user-rgw-secret # 💡 정의한 Secret 이름
+              key: AWS_ACCESS_KEY_ID # Secret 내의 키 이름
+        
+        # S3 Secret Key는 Secret에서 가져옴
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: sdv-user-rgw-secret # 💡 정의한 Secret 이름
+              key: AWS_SECRET_ACCESS_KEY # Secret 내의 키 이름
+---
+# FastAPI Server App Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: data-collector-service
+spec:
+  selector:
+    app: data-collector
+  # 💡 엣지 디바이스가 외부에서 접속해야 하므로 LoadBalancer 사용
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80 # 외부 노출 포트 (예: http://[LoadBalancer IP]:80)
+      targetPort: 8000 # 컨테이너 내부 포트
+      nodePort: 30888 # 필요에 따라 바꾼다.
