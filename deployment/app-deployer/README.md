@@ -2,13 +2,13 @@
 
 Edge Cluster Application Deployer는 Host Cluster에서 다수의 Member Cluster로 애플리케이션을 배포하고 관리하기 위한 REST API 서버이다.
 
-FastAPI를 기반으로 구현되었으며, Member Cluster의 Kubeconfig 정보와 배포할 애플리케이션의 정보를 받아 `kubectl` 명령을 실행하여 배포를 수행한다. 데이터는 SQLite DB에 저장되며, S3 호환 오브젝트 스토리지 관리를 위한 부가 기능도 포함한다.
+FastAPI를 기반으로 구현되었으며, Member Cluster의 Kubeconfig 정보와 배포할 어플리케이션의 정보를 받아 `kubectl` 명령을 실행하여 배포를 수행한다. 데이터는 SQLite DB에 저장되며, S3 호환 오브젝트 스토리지 관리를 위한 부가 기능도 포함한다.
 
 ## 주요 기능
 
 *   **클러스터 관리**: Member Cluster의 Kubeconfig를 등록, 조회, 삭제한다.
-*   **애플리케이션 관리**: 배포할 컨테이너 애플리케이션의 정보(이미지 주소, Manifest 등)를 등록 및 조회한다.
-*   **애플리케이션 배포**: 등록된 애플리케이션을 지정된 Member Cluster에 배포한다.
+*   **어플리케이션 관리**: 배포할 컨테이너 애플리케이션의 정보(이미지 주소, Manifest 등)를 등록 및 조회한다.
+*   **어플리케이션 배포**: 등록된 애플리케이션을 지정된 Member Cluster에 배포한다.
 *   **S3 버킷 관리**: S3 호환 오브젝트 스토리지의 버킷을 생성, 조회, 삭제한다.
 
 ## 기술 스택
@@ -114,3 +114,5 @@ docker push registry.suredatalab.kr/etri/sdv/app-deployer:latest
 
 *   **API 서버 URL**: `http://<host-cluster-node-ip>:30508`
 *   **Swagger UI**: `http://<host-cluster-node-ip>:30508/docs`
+
+# modified by khlee 12/04/2025
