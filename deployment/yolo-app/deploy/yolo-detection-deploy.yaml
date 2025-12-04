@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yolo-detect-jetson
+  namespace: sdv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: yolo-detect-jetson
+  template:
+    metadata:
+      labels:
+        app: yolo-detect-jetson
+    spec:
+      containers:
+      - name: yolo-app
+        image: registry.suredatalab.kr/etri/sdv/yolo-detection:drone-best
+        ports:
+        - containerPort: 8501
+        
+        envFrom:
+          - secretRef:
+              name: sdv-user-rgw-secret
+        env:
+          - name: AWS_ENDPOINT_URL
+            value: "https://s3.suredatalab.kr"
+            
+      # --- [핵심] Jetson 노드 타겟팅 ---
+      nodeSelector:
+        kubernetes.io/arch: arm64
+        kubernetes.io/hostname: etri-jetson
+        hardware: gpu
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: yolo-detect-jetson-svc
+  namespace: sdv
+spec:
+  type: NodePort # Member 클러스터 노드 IP로 접속
+  selector:
+    app: yolo-detect-jetson # 위 Deployment의 Pod를 선택
+  ports:
+    - protocol: TCP
+      port: 8501        # 서비스 내부 포트
+      targetPort: 8501  # Pod의 컨테이너 포트
+      nodePort: 30501   # 테스트를 위해 고정

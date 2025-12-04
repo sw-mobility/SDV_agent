@@ -1,0 +1,7 @@
+# requirements.txt
+streamlit
+ultralytics
+boto3
+opencv-python-headless
+numpy
+Pillow
