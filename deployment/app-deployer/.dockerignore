@@ -1,0 +1,17 @@
+# 1. Git 버전 관리 파일 (필수)
+.git
+.gitignore
+
+# 2. Node.js 패키지 (개발 의존성)
+node_modules/
+
+# 3. 임시 파일 및 로그
+*.log
+tmp/
+*.swp
+
+# 4. not deployed files
+__pycache__
+venv/
+deploy/
+data/

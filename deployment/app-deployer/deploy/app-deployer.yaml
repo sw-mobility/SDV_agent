@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sdv
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-deployer-db-pvc
+  namespace: sdv
+spec:
+  storageClassName: "rook-ceph-block" 
+  accessModes:
+    - ReadWriteOnce 
+  resources:
+    requests:
+      storage: 1Gi # SQLite DB용으로 1Gi 할당
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployer-svc
+  namespace: sdv
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app-deployer
+  template:
+    metadata:
+      labels:
+        app: app-deployer
+    spec:
+      containers:
+      - name: app-deployer
+        # 1. 빌드 후 푸시한 Host 클러스터용 deployer 이미지
+        image: registry.suredatalab.kr/etri/sdv/app-deployer:latest 
+        ports:
+        - containerPort: 8000 # Dockerfile에서 설정한 uvicorn 포트
+        env:
+        - name: DB_PATH
+          # PVC가 마운트된 /data 디렉토리의 파일 경로
+          value: "/data/app-registry.db"
+        volumeMounts:
+        # 2. PVC를 /data 디렉토리에 마운트
+        - name: db-storage
+          mountPath: /data
+      volumes:
+      # 3. 위에서 생성한 PVC(app-deployer-db-pvc)와 연결
+      - name: db-storage
+        persistentVolumeClaim:
+          claimName: app-deployer-db-pvc
+      # 4. Host 클러스터에도 regcred가 있다고 가정
+      imagePullSecrets:
+      - name: gitlab-registry-secret # [중요] registry 접근 secret이 생성되어 있어야 함
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-deployer-svc
+  namespace: sdv
+spec:
+  type: NodePort
+  selector:
+    app: app-deployer # Deployment의 Pod를 선택
+  ports:
+    - protocol: TCP
+      port: 8000 # 서비스 내부 포트
+      targetPort: 8000 # Pod의 컨테이너 포트
+      # Swagger UI 테스트를 위해 Host 클러스터 노드에 30508 포트로 노출
+      nodePort: 30508
