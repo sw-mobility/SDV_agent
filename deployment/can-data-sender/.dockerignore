@@ -1,0 +1,5 @@
+__pycache__
+venv
+*.bak
+.DS_Store
+daily/

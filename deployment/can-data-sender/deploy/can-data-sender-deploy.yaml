@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: can-data-sender-deploy
+  namespace: sdv # 💡 네임스페이스: sdv
+  labels:
+    app: can-data-sender
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: can-data-sender
+  template:
+    metadata:
+      labels:
+        app: can-data-sender
+    spec:
+      # HostPath 사용 시 특정 노드에 고정해야 할 수 있습니다. 
+      nodeSelector:
+        kubernetes.io/hostname: "etri-jetson" 
+        hardware: "gpu" 
+        
+      containers:
+      - name: can-data-sender-container
+        image: registry.suredatalab.kr/etri/sdv/can-data-sender:v1 
+        imagePullPolicy: Always
+        
+        command: ["python"]
+        args: ["send_ev_data.py"]
+        env:
+        # 1. 서버 앱 접속 정보 (sdv 네임스페이스의 Service 이름)
+        - name: SERVER_BASE_URL
+          value: "http://192.168.8.131:30888" 
+        - name: SERVER_END_POINT
+          value: "/api/vehicle/realtime" 
+        # 2. 데이터 디렉토리 설정 (컨테이너 내부 마운트 경로)
+        - name: DATA_ROOT_DIR
+          value: "/mnt/data/daily" # 엣지 앱 코드에서 데이터를 읽을 경로
+        - name: TRANSMISSION_INTERVAL
+          value: "10"
+
+        volumeMounts:
+        - name: daily-data-hostpath
+          mountPath: /mnt/data/daily # 💡 DATA_ROOT_DIR과 일치
+      imagePullSecrets:
+      - name: gitlab-registry-secret
+
+      # HostPath Volume 정의
+      volumes:
+      - name: daily-data-hostpath
+        hostPath:
+          path: /home/etri/data/daily
+          type: DirectoryOrCreate
