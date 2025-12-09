@@ -26,3 +26,6 @@ if [ $? -ne 0 ]; then
     echo "docker compose up -d failed, trying docker-compose up -d"
     docker-compose up -d
 fi
+
+
+#
