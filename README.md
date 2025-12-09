@@ -26,6 +26,7 @@ Please refer to the examples below.
 ```python
 from run_sync import S3DirSync
 
+
 sync = S3DirSync(bucket={BUCKET_NAME}, access_key={AWS_ACCESS_KEY_ID}, secret_key={AWS_SECRET_ACCESS_KEY})
 sync.start(s3_dir={S3_DIR_NAME}, local_dir={LOCAL_DIR_NAME}, check_period={SYNC_PERIOD_TIME})
 ```
