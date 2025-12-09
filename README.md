@@ -42,6 +42,7 @@ sync.start(s3_dir={S3_DIR_NAME}, local_dir={LOCAL_DIR_NAME}, check_period={SYNC_
 The Sync API ignores the update by the sync initiation. 
 So, the callback function would not be called by the initiation. 
 If you want to call the function by it, use the `ignore_update_by_init` option as shown below:
+
 ```python
 sync.start(s3_dir={S3_DIR_NAME}, local_dir={LOCAL_DIR_NAME}, check_period={SYNC_PERIOD_TIME}, ignore_update_by_init=False)
 ```
