@@ -7,7 +7,7 @@ Prerequisite
 - S3 BUCKET NAME
 - AWS ACCESS KEY ID
 - AWS SECRET ACCESS KEY
-- 
+  
 
 How to Start Data Upload
 ---
