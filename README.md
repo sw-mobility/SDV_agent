@@ -8,6 +8,7 @@ Prerequisite
 - S3 BUCKET NAME
 - AWS ACCESS KEY ID
 - AWS SECRET ACCESS KEY
+- 
   
   
 
@@ -15,7 +16,6 @@ How to Start Data Upload
 ---
 1. Save the image files to /SDV_agent/data/images folder for analysis
 2. Excute the below
-3. 
    
 ```sh
 sh start.sh
